@@ -56,7 +56,7 @@ class DETR(nn.Module):
                - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
                                 dictionnaries containing the two above keys for each decoder layer.
         """
-        print('Entering DETR forward')
+        #print('Entering DETR forward')
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
         features, pos = self.backbone(samples)
@@ -74,7 +74,7 @@ class DETR(nn.Module):
 
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):
-        print('Entering _set_aux_loss')
+        #print('Entering _set_aux_loss')
         # this is a workaround to make torchscript happy, as torchscript
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.
@@ -108,7 +108,7 @@ class SetCriterion(nn.Module):
         self.register_buffer('empty_weight', empty_weight)
 
     def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
-        print('Entering loss_labels')
+        #print('Entering loss_labels')
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
@@ -131,7 +131,7 @@ class SetCriterion(nn.Module):
 
     @torch.no_grad()
     def loss_cardinality(self, outputs, targets, indices, num_boxes):
-        print('Entering loss_cardinality')
+        #print('Entering loss_cardinality')
         """ Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
         This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
         """
@@ -145,7 +145,7 @@ class SetCriterion(nn.Module):
         return losses
 
     def loss_boxes(self, outputs, targets, indices, num_boxes):
-        print('Entering loss_boxes')
+        #print('Entering loss_boxes')
         """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
            targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
            The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
@@ -167,7 +167,7 @@ class SetCriterion(nn.Module):
         return losses
 
     def loss_masks(self, outputs, targets, indices, num_boxes):
-        print('Entering loss_masks')
+        #print('Entering loss_masks')
         """Compute the losses related to the masks: the focal loss and the dice loss.
            targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
         """
@@ -197,21 +197,21 @@ class SetCriterion(nn.Module):
         return losses
 
     def _get_src_permutation_idx(self, indices):
-        print('Entering _get_src_permutation_idx')
+        #print('Entering _get_src_permutation_idx')
         # permute predictions following indices
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
         return batch_idx, src_idx
 
     def _get_tgt_permutation_idx(self, indices):
-        print('Entering _get_tgt_permutation_idx')
+        #print('Entering _get_tgt_permutation_idx')
         # permute targets following indices
         batch_idx = torch.cat([torch.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
         tgt_idx = torch.cat([tgt for (_, tgt) in indices])
         return batch_idx, tgt_idx
 
     def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
-        print('Entering get_loss')
+        #print('Entering get_loss')
         loss_map = {
             'labels': self.loss_labels,
             'cardinality': self.loss_cardinality,
@@ -222,7 +222,7 @@ class SetCriterion(nn.Module):
         return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
 
     def forward(self, outputs, targets):
-        print('Entering Setcriterion Forward')
+        #print('Entering Setcriterion Forward')
         """ This performs the loss computation.
         Parameters:
              outputs: dict of tensors, see the output specification of the model for the format
@@ -269,7 +269,7 @@ class PostProcess(nn.Module):
     """ This module converts the model's output into the format expected by the coco api"""
     @torch.no_grad()
     def forward(self, outputs, target_sizes):
-        print('Entering PostProcess')
+        #print('Entering PostProcess')
         """ Perform the computation
         Parameters:
             outputs: raw outputs of the model
@@ -292,7 +292,7 @@ class PostProcess(nn.Module):
         scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1)
         boxes = boxes * scale_fct[:, None, :]
         
-        print('scale_fct:', scale_fct)
+        #print('scale_fct:', scale_fct)
         
         results = [{'scores': s, 'labels': l, 'boxes': b} for s, l, b in zip(scores, labels, boxes)]
 
@@ -309,14 +309,14 @@ class MLP(nn.Module):
         self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
 
     def forward(self, x):
-        print('Entering MLP Forward')
+        #print('Entering MLP Forward')
         for i, layer in enumerate(self.layers):
             x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x
 
 
 def build(args):
-    print('Entering build(args)')
+    #print('Entering build(args)')
     # the `num_classes` naming here is somewhat misleading.
     # it indeed corresponds to `max_obj_id + 1`, where max_obj_id
     # is the maximum id for a class in your dataset. For example,
