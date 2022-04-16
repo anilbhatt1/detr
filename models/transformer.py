@@ -274,6 +274,9 @@ def _get_clones(module, N):
 
 
 def build_transformer(args):
+    print(f'd_model / args.hidden_dim : {args.hidden_dim}, dropout /args.dropout : {args.dropout}, nhead / args.nheads : {args.nheads}')
+    print(f'dim_feedforward : {args.dim_feedforward}, num_encoder_layers : {args.enc_layers}, num_decoder_layers : {args.dec_layers}')
+    print(f'normalize_before : {args.pre_norm}')
     return Transformer(
         d_model=args.hidden_dim,
         dropout=args.dropout,
