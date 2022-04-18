@@ -37,7 +37,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         
         print_flag = 0
-        if (iter__ == 1 or iter__ == 5):
+        if (iter__ == 1 or iter__ == 5) and epoch == 0:
             print('-----------------------------------')
             print_flag = 1
             
@@ -103,11 +103,15 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             output_dir=os.path.join(output_dir, "panoptic_eval"),
         )
 
+    iter__ = 0
     for samples, targets in metric_logger.log_every(data_loader, 10, header):
+        iter__ +=1         
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-
-        outputs = model(samples)
+        print(f'Eval Iteration : {iter__}, samples.size() : {samples.tensors.shape}')
+        
+        print_flag = 0        
+        outputs = model(samples, print_flag)
         loss_dict = criterion(outputs, targets)
         weight_dict = criterion.weight_dict
 
