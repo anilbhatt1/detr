@@ -41,7 +41,7 @@ class DETR(nn.Module):
         self.backbone = backbone
         self.aux_loss = aux_loss
 
-    def forward(self, samples: NestedTensor):
+    def forward(self, samples: NestedTensor, print_flag):
         """ The forward expects a NestedTensor, which consists of:
                - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
                - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
@@ -58,14 +58,17 @@ class DETR(nn.Module):
         """
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
-        print(f'DETR FWD - samples.shape : {samples.tensors.shape}')
-        features, pos = self.backbone(samples)
-        print(f'DETR FWD - features[0].shape : {features[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
+        if print_flag:    
+            print(f'DETR FWD - samples.shape : {samples.tensors.shape}')
+        features, pos = self.backbone(samples, print_flag)
+        if print_flag:  
+            print(f'DETR FWD - features[0].shape : {features[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
         
         src, mask = features[-1].decompose()
-        print(f'DETR FWD - src.size() : {src.size()}, mask.size() : {mask.size()}')
+        if print_flag:  
+            print(f'DETR FWD - src.size() : {src.size()}, mask.size() : {mask.size()}')
         assert mask is not None
-        hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
+        hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1], print_flag)[0]
 
         outputs_class = self.class_embed(hs)
         outputs_coord = self.bbox_embed(hs).sigmoid()
