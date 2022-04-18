@@ -105,7 +105,7 @@ class Joiner(nn.Sequential):
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
-        print(f'Backbone Joiner - out.shape : {out.tensors.shape}, pos.size() : {pos.size()}')
+        print(f'Backbone Joiner fwd - out[0].shape : {out[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
         return out, pos
 
 
