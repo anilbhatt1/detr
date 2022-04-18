@@ -58,9 +58,9 @@ class DETR(nn.Module):
         """
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
-            print(f'DETR FWD - samples.shape : {samples.tensors.shape}')
+        print(f'DETR FWD - samples.shape : {samples.tensors.shape}')
         features, pos = self.backbone(samples)
-        print(f'DETR FWD - features.shape : {features.tensors.shape}, pos.size() : {pos.size()}')
+        print(f'DETR FWD - features[0].shape : {features[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
         
         src, mask = features[-1].decompose()
         print(f'DETR FWD - src.size() : {src.size()}, type(mask) : {type(mask)}')
