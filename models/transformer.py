@@ -221,8 +221,8 @@ class TransformerEncoderLayer(nn.Module):
         if (lyr == 1 or lyr == 6) and print_flag:
             print(f'TEL FWD {lyr} src : {src.size()}, pos : {pos.size()}')
         if self.normalize_before:
-            return self.forward_pre(src, src_mask, src_key_padding_mask, pos, lyr)
-        return self.forward_post(src, src_mask, src_key_padding_mask, pos, print_flag)
+            return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
+        return self.forward_post(src, src_mask, src_key_padding_mask, pos, lyr, print_flag)
 
 
 class TransformerDecoderLayer(nn.Module):
