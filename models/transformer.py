@@ -207,7 +207,7 @@ class TransformerEncoderLayer(nn.Module):
         if (lyr == 1 or lyr == 6):
             print(f'TEL FWD {lyr} src : {src.size()}, pos : {pos.size()}')
         if self.normalize_before:
-            return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
+            return self.forward_pre(src, src_mask, src_key_padding_mask, pos, lyr)
         return self.forward_post(src, src_mask, src_key_padding_mask, pos)
 
 
@@ -307,7 +307,7 @@ class TransformerDecoderLayer(nn.Module):
         if (lyr == 1 or lyr == 6):
             print(f'TDL FWD {lyr} tgt : {tgt.size()}, memory : {memory.size()}, tgt_mask : {type(tgt_mask)}, pos : {pos.size()}, query_pos : {query_pos.size()}')
         return self.forward_post(tgt, memory, tgt_mask, memory_mask,
-                                 tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
+                                 tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos, lyr)
 
 
 def _get_clones(module, N):
