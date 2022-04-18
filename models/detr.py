@@ -58,9 +58,12 @@ class DETR(nn.Module):
         """
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
+            print(f'DETR FWD - samples.shape : {samples.tensors.shape}')
         features, pos = self.backbone(samples)
-
+        print(f'DETR FWD - features.shape : {features.tensors.shape}, pos.size() : {pos.size()}')
+        
         src, mask = features[-1].decompose()
+        print(f'DETR FWD - src.size() : {src.size()}, type(mask) : {type(mask)}')
         assert mask is not None
         hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
 
