@@ -102,11 +102,11 @@ class Joiner(nn.Sequential):
         out: List[NestedTensor] = []
         pos = []        
         for name, x in xs.items():
-            print('Backbone - name:', name, 'x.size():', x.size())
+            print('Backbone - name:', name, 'type(x):', type(x))
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
-        print('Backbone - out:', out.size(), 'pos:', pos.size())
+        print('Backbone - out - len, 0 size:', len(out), out[0].size(), 'pos - len, 0 size:', len(pos), pos[0].size())
         return out, pos
 
 
