@@ -63,7 +63,7 @@ class DETR(nn.Module):
         print(f'DETR FWD - features[0].shape : {features[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
         
         src, mask = features[-1].decompose()
-        print(f'DETR FWD - src.size() : {src.size()}, type(mask) : {type(mask)}')
+        print(f'DETR FWD - src.size() : {src.size()}, mask.size() : {mask.size()}')
         assert mask is not None
         hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
 
