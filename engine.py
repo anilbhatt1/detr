@@ -29,7 +29,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     iter__ = 0
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
         iter__ += 1
-        print(f'Engine - iter : {iter__}, samples.size() : {samples.size()}, targets.size() : {targets.size()}')
+        print(f'Engine - iter : {iter__}, samples.size() : {samples.tensors.shape}, targets.size() : {targets.size()}')
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
