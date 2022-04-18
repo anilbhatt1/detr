@@ -38,6 +38,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         
         print_flag = 0
         if (iter__ == 1 or iter__ == 5):
+            print('-----------------------------------')
             print_flag = 1
             
         outputs = model(samples, print_flag)
@@ -46,6 +47,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         loss_dict = criterion(outputs, targets)
         if print_flag:
             print('Engine - loss_dict:', loss_dict)
+            print('----------------------------------')
         weight_dict = criterion.weight_dict
         losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
 
