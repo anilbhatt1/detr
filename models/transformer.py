@@ -227,25 +227,25 @@ class TransformerDecoderLayer(nn.Module):
                      memory_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None,
                      query_pos: Optional[Tensor] = None):
-        print(f'DEL forward_post tgt.size() : {tgt.size()}, memory.size() : {memory.size()}, pos.size() : {pos.size()}, query_pos.size : {query_pos.size()}') 
+        print(f'TDL forward_post tgt.size() : {tgt.size()}, memory.size() : {memory.size()}, pos.size() : {pos.size()}, query_pos.size : {query_pos.size()}') 
         q = k = self.with_pos_embed(tgt, query_pos)
-        print(f'DEL forward_post q : {q.size()}, k : {k.size()}')
+        print(f'TDL forward_post q : {q.size()}, k : {k.size()}')
         tgt2 = self.self_attn(q, k, value=tgt, attn_mask=tgt_mask,
                               key_padding_mask=tgt_key_padding_mask)[0]
-        print(f'DEL forward_post tgt2 - after self_attn : {tgt2.size()}')
+        print(f'TDL forward_post tgt2 - after self_attn : {tgt2.size()}')
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
         tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
                                    key=self.with_pos_embed(memory, pos),
                                    value=memory, attn_mask=memory_mask,
                                    key_padding_mask=memory_key_padding_mask)[0]
-        print(f'DEL forward_post tgt2 - after multiheadattn : {tgt2.size()}')
+        print(f'TDL forward_post tgt2 - after multiheadattn : {tgt2.size()}')
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt2)
         tgt = self.norm3(tgt)
-        print(f'DEL forward_post tgt - after dropouts, linear, activations & norms : {tgt.size()}')
+        print(f'TDL forward_post tgt - after dropouts, linear, activations & norms : {tgt.size()}')
         return tgt
 
     def forward_pre(self, tgt, memory,
@@ -281,7 +281,7 @@ class TransformerDecoderLayer(nn.Module):
         if self.normalize_before:
             return self.forward_pre(tgt, memory, tgt_mask, memory_mask,
                                     tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
-        print(f'DEL FWD tgt : {tgt.size()}, memory : {memory.size()}, tgt_mask : {tgt_mask.size()}, pos : {pos.size()}, query_pos : {query_pos.size()}')
+        print(f'TDL FWD tgt : {tgt.size()}, memory : {memory.size()}, tgt_mask : {type(tgt_mask)}, pos : {pos.size()}, query_pos : {query_pos.size()}')
         return self.forward_post(tgt, memory, tgt_mask, memory_mask,
                                  tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
 
