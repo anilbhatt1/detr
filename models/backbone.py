@@ -97,7 +97,7 @@ class Joiner(nn.Sequential):
     def __init__(self, backbone, position_embedding):
         super().__init__(backbone, position_embedding)
 
-    def forward(self, tensor_list: NestedTensor):
+    def forward(self, tensor_list: NestedTensor, print_flag):
         xs = self[0](tensor_list)
         out: List[NestedTensor] = []
         pos = []        
@@ -105,7 +105,8 @@ class Joiner(nn.Sequential):
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
-        print(f'Backbone Joiner fwd - out[0].shape : {out[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
+        if print_flag:
+            print(f'Backbone Joiner fwd - out[0].shape : {out[0].tensors.shape}, pos[0].size() : {pos[0].size()}')
         return out, pos
 
 
