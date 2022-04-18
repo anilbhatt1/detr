@@ -30,7 +30,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
         iter__ += 1
         print(f'Engine - iter : {iter__}, samples.size() : {samples.tensors.shape}')
-        print(f'Engine - targets[0].keys() : {targets[0].keys()}, targets[0].keys() : {targets[1].keys()}')
+        print(f'Engine - targets[0].keys() : {targets[0].items()}')
+        print(f'Engine - targets[1].keys() : {targets[1].items()}')
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
