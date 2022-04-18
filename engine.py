@@ -35,8 +35,12 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         print(f'Engine - iter : {iter__}, samples.size() : {sz}, Resnet-stride 32 reshapes to: [{sz[0]},{sz[1]},{math.ceil(sz[2]/32)},{math.ceil(sz[3]/32)}]')
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-
-        outputs = model(samples)
+        
+        print_flag = 0
+        if (iter__ == 1 or iter__ == 5):
+            print_flag = 1
+            
+        outputs = model(samples, print_flag)
         print(f'Engine - outputs : {outputs.keys()}')
         loss_dict = criterion(outputs, targets)
         print('Engine - loss_dict:', loss_dict)
