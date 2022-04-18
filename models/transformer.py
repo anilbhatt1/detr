@@ -151,14 +151,19 @@ class TransformerEncoderLayer(nn.Module):
                      src_mask: Optional[Tensor] = None,
                      src_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None):
+        print(f'TEL forward_post src : {src.size()}')
         q = k = self.with_pos_embed(src, pos)
+        print(f'TEL forward_post q : {q.size()}, k : {k.size()}')
         src2 = self.self_attn(q, k, value=src, attn_mask=src_mask,
                               key_padding_mask=src_key_padding_mask)[0]
+        print(f'TEL forward_post src2 : {src2.size()}')
         src = src + self.dropout1(src2)
         src = self.norm1(src)
+        print(f'TEL forward_post src after norm-1 : {src.size()}') 
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
         src = src + self.dropout2(src2)
         src = self.norm2(src)
+        print(f'TEL forward_post src after norm-2: {src.size()}')  
         return src
 
     def forward_pre(self, src,
@@ -183,7 +188,7 @@ class TransformerEncoderLayer(nn.Module):
                 src_mask: Optional[Tensor] = None,
                 src_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None):
-        print(f'TEL src : {src.size()}, src_mask : {src_mask.size()}, pos : {pos.size()}')
+        print(f'TEL src : {src.size()}, pos : {pos.size()}')
         if self.normalize_before:
             print('TEL Getting into self.normalize_before')
             return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
