@@ -28,16 +28,17 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
     iter__ = 0
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
-        iter__ += 1
-        print(f'Engine - iter : {iter__}, samples.size() : {samples.tensors.shape}')
+        iter__ += 1        
         print(f"Engine - targets[0] Num boxes: {targets[0]['boxes'].size()}, orig_size : {targets[0]['orig_size']}, size : {targets[0]['size']}")
         print(f"Engine - targets[1] Num boxes: {targets[1]['boxes'].size()}, orig_size : {targets[1]['orig_size']}, size : {targets[1]['size']}")
+        print(f'Engine - iter : {iter__}, samples.size() : {samples.tensors.shape}')
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         outputs = model(samples)
+        print(f'Engine - outputs : {outputs.items()}')
         loss_dict = criterion(outputs, targets)
-        print('loss_dict:', loss_dict)
+        print('Engine - loss_dict:', loss_dict)
         weight_dict = criterion.weight_dict
         losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
 
