@@ -102,12 +102,11 @@ class Joiner(nn.Sequential):
         out: List[NestedTensor] = []
         pos = []        
         for name, x in xs.items():
-            print('name:', name, 'x:', x)
+            print('Backbone - name:', name, 'x.size():', x.size())
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
-        print('out:', out)
-        print('pos:', pos)
+        print('Backbone - out:', out.size(), 'pos:', pos.size())
         return out, pos
 
 
@@ -118,7 +117,6 @@ def build_backbone(args):
     print(f'args.backbone : {args.backbone}, train_backbone : {train_backbone}, return_interm_layers : {return_interm_layers}, args.dilation :{args.dilation}')
     backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
     model = Joiner(backbone, position_embedding)
-    print('model:', model)
     model.num_channels = backbone.num_channels
-    print('model.num_channels:', model.num_channels)
+    print('Backbone - model.num_channels:', model.num_channels)
     return model
