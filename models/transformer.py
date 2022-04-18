@@ -47,15 +47,22 @@ class Transformer(nn.Module):
     def forward(self, src, mask, query_embed, pos_embed):
         # flatten NxCxHxW to HWxNxC
         bs, c, h, w = src.shape
+        print(f'Transformer FWD : {src.shape}')
         src = src.flatten(2).permute(2, 0, 1)
+        print(f'Transformer FWD after src.flatten(2).permute(2, 0, 1) : {src.shape}')
         pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
+        print(f'Transformer FWD after pos_embed.flatten(2).permute(2, 0, 1) : {pos_embed.shape}')
         query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)
+        print(f'Transformer FWD after query_embed.unsqueeze(1).repeat(1, bs, 1) : {query_embed.shape}')
         mask = mask.flatten(1)
 
         tgt = torch.zeros_like(query_embed)
+        print(f'Transformer FWD tgt.size() - after torch.zeros_like(query_embed) : {tgt.size()}') 
         memory = self.encoder(src, src_key_padding_mask=mask, pos=pos_embed)
+        print(f'Transformer FWD memory.size() - o/p of self.encoder : {memory.size()}')  
         hs = self.decoder(tgt, memory, memory_key_padding_mask=mask,
                           pos=pos_embed, query_pos=query_embed)
+        print(f'Transformer FWD hs.size() - o/p of self.decoder : {hs.size()}') 
         return hs.transpose(1, 2), memory.permute(1, 2, 0).view(bs, c, h, w)
 
 
@@ -79,7 +86,7 @@ class TransformerEncoder(nn.Module):
 
         if self.norm is not None:
             output = self.norm(output)
-
+        print(f'TransformerEncoder FWD - output.size() : {output.size()}')
         return output
 
 
@@ -120,7 +127,7 @@ class TransformerDecoder(nn.Module):
 
         if self.return_intermediate:
             return torch.stack(intermediate)
-
+        print(f'TransformerDecoder FWD - output.unsqueeze(0).size() : {output.unsqueeze(0).size()}')
         return output.unsqueeze(0)
 
 
@@ -151,19 +158,17 @@ class TransformerEncoderLayer(nn.Module):
                      src_mask: Optional[Tensor] = None,
                      src_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None):
-        print(f'TEL forward_post src : {src.size()}')
         q = k = self.with_pos_embed(src, pos)
         print(f'TEL forward_post q : {q.size()}, k : {k.size()}')
         src2 = self.self_attn(q, k, value=src, attn_mask=src_mask,
                               key_padding_mask=src_key_padding_mask)[0]
-        print(f'TEL forward_post src2 : {src2.size()}')
+        print(f'TEL forward_post after self_attn - src2 : {src2.size()}')
         src = src + self.dropout1(src2)
         src = self.norm1(src)
-        print(f'TEL forward_post src after norm-1 : {src.size()}') 
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
         src = src + self.dropout2(src2)
         src = self.norm2(src)
-        print(f'TEL forward_post src after norm-2: {src.size()}')  
+        print(f'TEL forward_post src post +drop1(src2), norm1(src), [linear1, activ, drop, linear2](src), +drop2(src), norm-2(src): {src.size()}')  
         return src
 
     def forward_pre(self, src,
@@ -171,26 +176,21 @@ class TransformerEncoderLayer(nn.Module):
                     src_key_padding_mask: Optional[Tensor] = None,
                     pos: Optional[Tensor] = None):
         src2 = self.norm1(src)
-        print(f'TEL forward_pre src2 : {src2.size()}')
         q = k = self.with_pos_embed(src2, pos)
-        print(f'TEL forward_pre q : {q.size()}, k : {k.size()}')
         src2 = self.self_attn(q, k, value=src2, attn_mask=src_mask,
                               key_padding_mask=src_key_padding_mask)[0]
-        print(f'TEL forward_pre src2 : {src2.size()}')
         src = src + self.dropout1(src2)
         src2 = self.norm2(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src2))))
         src = src + self.dropout2(src2)
-        print(f'TEL forward_pre src : {src.size()}') 
         return src
 
     def forward(self, src,
                 src_mask: Optional[Tensor] = None,
                 src_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None):
-        print(f'TEL src : {src.size()}, pos : {pos.size()}')
+        print(f'TEL FWD src : {src.size()}, pos : {pos.size()}')
         if self.normalize_before:
-            print('TEL Getting into self.normalize_before')
             return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
         return self.forward_post(src, src_mask, src_key_padding_mask, pos)
 
@@ -227,20 +227,25 @@ class TransformerDecoderLayer(nn.Module):
                      memory_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None,
                      query_pos: Optional[Tensor] = None):
+        print(f'DEL forward_post tgt.size() : {tgt.size()}, memory.size() : {memory.size()}, pos.size() : {pos.size()}, query_pos.size : {query_pos.size()}') 
         q = k = self.with_pos_embed(tgt, query_pos)
+        print(f'DEL forward_post q : {q.size()}, k : {k.size()}')
         tgt2 = self.self_attn(q, k, value=tgt, attn_mask=tgt_mask,
                               key_padding_mask=tgt_key_padding_mask)[0]
+        print(f'DEL forward_post tgt2 - after self_attn : {tgt2.size()}')
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
         tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
                                    key=self.with_pos_embed(memory, pos),
                                    value=memory, attn_mask=memory_mask,
                                    key_padding_mask=memory_key_padding_mask)[0]
+        print(f'DEL forward_post tgt2 - after multiheadattn : {tgt2.size()}')
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt2)
         tgt = self.norm3(tgt)
+        print(f'DEL forward_post tgt - after dropouts, linear, activations & norms : {tgt.size()}')
         return tgt
 
     def forward_pre(self, tgt, memory,
@@ -276,6 +281,7 @@ class TransformerDecoderLayer(nn.Module):
         if self.normalize_before:
             return self.forward_pre(tgt, memory, tgt_mask, memory_mask,
                                     tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
+        print(f'DEL FWD tgt : {tgt.size()}, memory : {memory.size()}, tgt_mask : {tgt_mask.size()}, pos : {pos.size()}, query_pos : {query_pos.size()}')
         return self.forward_post(tgt, memory, tgt_mask, memory_mask,
                                  tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
 
@@ -285,9 +291,9 @@ def _get_clones(module, N):
 
 
 def build_transformer(args):
-    print(f'd_model / args.hidden_dim : {args.hidden_dim}, dropout /args.dropout : {args.dropout}, nhead / args.nheads : {args.nheads}')
-    print(f'dim_feedforward : {args.dim_feedforward}, num_encoder_layers : {args.enc_layers}, num_decoder_layers : {args.dec_layers}')
-    print(f'normalize_before : {args.pre_norm}')
+    print(f'Transformer BUILD - d_model / args.hidden_dim : {args.hidden_dim}, dropout /args.dropout : {args.dropout}, nhead / args.nheads : {args.nheads}')
+    print(f'Transformer BUILD - dim_feedforward : {args.dim_feedforward}, num_encoder_layers : {args.enc_layers}, num_decoder_layers : {args.dec_layers}')
+    print(f'Transformer BUILD - normalize_before : {args.pre_norm}')
     return Transformer(
         d_model=args.hidden_dim,
         dropout=args.dropout,
