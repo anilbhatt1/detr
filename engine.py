@@ -34,9 +34,9 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         
-        iter__ += 1
+        
         print_flag = 0
-        if (iter__ == 1 or iter__ == 5) and epoch == 0:
+        if (iter__ == 0 or iter__ == 15) and epoch == 0:
             print('-----------------------------------')
             print_flag = 1       
         if print_flag:
@@ -44,6 +44,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             print(f"Engine - targets[0] Num boxes: {targets[0]['boxes'].size()}, orig_size : {targets[0]['orig_size']}, size : {targets[0]['size']}")
             print(f"Engine - targets[1] Num boxes: {targets[1]['boxes'].size()}, orig_size : {targets[1]['orig_size']}, size : {targets[1]['size']}")
             print(f'Engine - iter : {iter__}, samples.size() : {sz}, Resnet-stride 32 reshapes to: [{sz[0]},{sz[1]},{math.ceil(sz[2]/32)},{math.ceil(sz[3]/32)}]')
+        iter__ += 1
             
         outputs = model(samples, print_flag)
         if print_flag:
@@ -109,12 +110,14 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
     iter__ = 0
     for samples, targets in metric_logger.log_every(data_loader, 10, header):
-        iter__ +=1         
+                
         samples = samples.to(device)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        print(f'Eval Iteration : {iter__}, samples.size() : {samples.tensors.shape}')
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]        
         
-        print_flag = 0        
+        print(f'Eval Iteration : {iter__}, samples.size() : {samples.tensors.shape}')
+        iter__ +=1 
+        print_flag = 0
+        
         outputs = model(samples, print_flag)
         loss_dict = criterion(outputs, targets)
         weight_dict = criterion.weight_dict
