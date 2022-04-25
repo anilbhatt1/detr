@@ -251,7 +251,6 @@ class SetCriterion(nn.Module):
             if print_flag:
                 print(f"Setcriterion -> Entering aux_outputs , len(outputs['aux_outputs']) : {len(outputs['aux_outputs'])}")
             for i, aux_outputs in enumerate(outputs['aux_outputs']):
-                print(f"Setcriterion -> i : {i}, aux_outputs.keys() : {aux_outputs.keys()}")
                 indices = self.matcher(aux_outputs, targets, print_flag)
                 for loss in self.losses:
                     if loss == 'masks':
