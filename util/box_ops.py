@@ -6,10 +6,12 @@ import torch
 from torchvision.ops.boxes import box_area
 
 
-def box_cxcywh_to_xyxy(x):
+def box_cxcywh_to_xyxy(x, print_flag):
     x_c, y_c, w, h = x.unbind(-1)
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
+    if print_flag:
+        print(f"box_cxcywh_to_xyxy -> x_c : {x_c}, y_c : {y_c}, w : {w}, h : {h}, b : {b}")
     return torch.stack(b, dim=-1)
 
 
@@ -37,7 +39,7 @@ def box_iou(boxes1, boxes2):
     return iou, union
 
 
-def generalized_box_iou(boxes1, boxes2):
+def generalized_box_iou(boxes1, boxes2, print_flag):
     """
     Generalized IoU from https://giou.stanford.edu/
 
@@ -51,13 +53,21 @@ def generalized_box_iou(boxes1, boxes2):
     assert (boxes1[:, 2:] >= boxes1[:, :2]).all()
     assert (boxes2[:, 2:] >= boxes2[:, :2]).all()
     iou, union = box_iou(boxes1, boxes2)
+    if print_flag:
+        print(f"GBIOU -> boxes1 : {boxes1}, boxes2 : {boxes2}, iou : {iou}, union : {union}")
 
     lt = torch.min(boxes1[:, None, :2], boxes2[:, :2])
     rb = torch.max(boxes1[:, None, 2:], boxes2[:, 2:])
+    if print_flag:
+        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, lt : {lt})
+        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, rb : {rb})
 
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     area = wh[:, :, 0] * wh[:, :, 1]
-
+    if print_flag:
+        print(f"GBIOU -> wh : {wh}, wh[:, :, 0] : {wh[:, :, 0]}, wh[:, :, 1] : {wh[:, :, 1]}, area : {area}")
+        print(f"GBIOU -> iou - (area - union) / area : {iou - (area - union) / area}")
+    
     return iou - (area - union) / area
 
 
