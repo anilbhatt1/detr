@@ -249,7 +249,7 @@ class SetCriterion(nn.Module):
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if 'aux_outputs' in outputs:
             if print_flag:
-                print(f"Setcriterion -> Entering aux_outputs , aux_outputs.size : {aux_outputs.size()}")
+                print(f"Setcriterion -> Entering aux_outputs , outputs['aux_outputs'].size : {outputs['aux_outputs'].size()}")
             for i, aux_outputs in enumerate(outputs['aux_outputs']):
                 print(f"Setcriterion -> i : {i}, aux_outputs.keys() : {aux_outputs.keys()}")
                 indices = self.matcher(aux_outputs, targets, print_flag)
