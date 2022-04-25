@@ -32,7 +32,7 @@ class HungarianMatcher(nn.Module):
         assert cost_class != 0 or cost_bbox != 0 or cost_giou != 0, "all costs cant be 0"
 
     @torch.no_grad()
-    def forward(self, outputs, targets):
+    def forward(self, outputs, targets, print_flag):
         """ Performs the matching
 
         Params:
@@ -52,30 +52,47 @@ class HungarianMatcher(nn.Module):
             For each batch element, it holds:
                 len(index_i) = len(index_j) = min(num_queries, num_target_boxes)
         """
+        if print_flag:
+            print(f"Matcher -> Outputs['pred_logits'].size() : {outputs['pred_logits'].size()}, Outputs['pred_boxes'].size() : {outputs['pred_boxes'].size()}")
+            print(f"Matcher -> targets['labels'].size() : {targets['labels'].size()}, targets['boxes'].size() : {targets['boxes'].size()}")
         bs, num_queries = outputs["pred_logits"].shape[:2]
 
         # We flatten to compute the cost matrices in a batch
         out_prob = outputs["pred_logits"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, num_classes]
         out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
+        if print_flag:
+            print(f"Matcher -> out_prob.size() : {out_prob.size()}, out_bbox.size() : {out_bbox.size()}")
 
         # Also concat the target labels and boxes
         tgt_ids = torch.cat([v["labels"] for v in targets])
         tgt_bbox = torch.cat([v["boxes"] for v in targets])
+        if print_flag:
+            print(f"Matcher -> tgt_ids.size() : {tgt_ids.size()}, tgt_bbox.size() : {tgt_bbox.size()}")
 
         # Compute the classification cost. Contrary to the loss, we don't use the NLL,
         # but approximate it in 1 - proba[target class].
         # The 1 is a constant that doesn't change the matching, it can be ommitted.
         cost_class = -out_prob[:, tgt_ids]
-
+        if print_flag:
+            print(f"Matcher -> cost_class.size() : {cost_class.size()}")
+        
         # Compute the L1 cost between boxes
         cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
+        if print_flag:
+            print(f"Matcher -> cost_bbox.size() : {cost_bbox.size()}")
 
         # Compute the giou cost betwen boxes
-        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox))
+        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox, print_flag), box_cxcywh_to_xyxy(tgt_bbox, print_flag), print_flag)
+        if print_flag:
+            print(f"Matcher -> cost_giou : {cost_giou}")
 
         # Final cost matrix
         C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
+        if print_flag:
+            print(f"Matcher -> C.size() : {C.size()} C before view : {C}")
         C = C.view(bs, num_queries, -1).cpu()
+        if print_flag:
+            print(f"Matcher -> C.size() : {C.size()} C after view : {C}")        
 
         sizes = [len(v["boxes"]) for v in targets]
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
