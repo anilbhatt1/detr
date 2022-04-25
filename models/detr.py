@@ -69,6 +69,8 @@ class DETR(nn.Module):
             print(f'DETR FWD - src.size() : {src.size()}, mask.size() : {mask.size()}')
         assert mask is not None
         hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1], print_flag)[0]
+        if print_flag:
+            print(f'DETR FWD - hs.size() : {hs.size()}')
 
         outputs_class = self.class_embed(hs)
         outputs_coord = self.bbox_embed(hs).sigmoid()
