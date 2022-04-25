@@ -82,17 +82,17 @@ class HungarianMatcher(nn.Module):
             print(f"Matcher -> cost_bbox.size() : {cost_bbox.size()}")
 
         # Compute the giou cost betwen boxes
-        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox, print_flag), box_cxcywh_to_xyxy(tgt_bbox, print_flag), print_flag)
+        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox), print_flag)
         if print_flag:
             print(f"Matcher -> cost_giou : {cost_giou}")
 
         # Final cost matrix
         C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
         if print_flag:
-            print(f"Matcher -> C.size() : {C.size()} C before view : {C}")
+            print(f"Matcher -> C.size() before view: {C.size()}")
         C = C.view(bs, num_queries, -1).cpu()
         if print_flag:
-            print(f"Matcher -> C.size() : {C.size()} C after view : {C}")        
+            print(f"Matcher -> C.size() after view: {C.size()}")        
 
         sizes = [len(v["boxes"]) for v in targets]
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
