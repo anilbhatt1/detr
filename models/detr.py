@@ -251,8 +251,9 @@ class SetCriterion(nn.Module):
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if 'aux_outputs' in outputs:
             if print_flag:
-                print(f"Setcriterion -> aux_outputs")
+                print(f"Setcriterion -> Entering aux_outputs")
             for i, aux_outputs in enumerate(outputs['aux_outputs']):
+                print(f"Setcriterion -> i : {i}, aux_outputs : {aux_outputs}")
                 indices = self.matcher(aux_outputs, targets, print_flag)
                 for loss in self.losses:
                     if loss == 'masks':
@@ -262,7 +263,7 @@ class SetCriterion(nn.Module):
                     if loss == 'labels':
                         # Logging is enabled only for the last layer
                         kwargs = {'log': False}
-                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, **kwargs)
+                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, print_flag, **kwargs)
                     l_dict = {k + f'_{i}': v for k, v in l_dict.items()}
                     losses.update(l_dict)
 
