@@ -244,16 +244,14 @@ class SetCriterion(nn.Module):
         for loss in self.losses:
             if print_flag:
                print(f"Setcriterion -> loss : {loss}")
-               losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes, print_flag))
-            else:
-                losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes))
+            losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes, print_flag))
 
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if 'aux_outputs' in outputs:
             if print_flag:
-                print(f"Setcriterion -> Entering aux_outputs")
+                print(f"Setcriterion -> Entering aux_outputs , aux_outputs.size : {aux_outputs.size()}")
             for i, aux_outputs in enumerate(outputs['aux_outputs']):
-                print(f"Setcriterion -> i : {i}, aux_outputs : {aux_outputs}")
+                print(f"Setcriterion -> i : {i}, aux_outputs.keys() : {aux_outputs.keys()}")
                 indices = self.matcher(aux_outputs, targets, print_flag)
                 for loss in self.losses:
                     if loss == 'masks':
