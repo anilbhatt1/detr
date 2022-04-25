@@ -6,12 +6,10 @@ import torch
 from torchvision.ops.boxes import box_area
 
 
-def box_cxcywh_to_xyxy(x, print_flag):
+def box_cxcywh_to_xyxy(x):
     x_c, y_c, w, h = x.unbind(-1)
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
-    if print_flag:
-        print(f"box_cxcywh_to_xyxy -> x_c : {x_c}, y_c : {y_c}, w : {w}, h : {h}, b : {b}")
     return torch.stack(b, dim=-1)
 
 
@@ -54,19 +52,20 @@ def generalized_box_iou(boxes1, boxes2, print_flag):
     assert (boxes2[:, 2:] >= boxes2[:, :2]).all()
     iou, union = box_iou(boxes1, boxes2)
     if print_flag:
-        print(f"GBIOU -> boxes1 : {boxes1}, boxes2 : {boxes2}, iou : {iou}, union : {union}")
+        print(f"GBIOU -> boxes1 : {boxes1.size()}, boxes2 : {boxes2.size()}, iou : {iou.size()}, union : {union.size()}")
 
     lt = torch.min(boxes1[:, None, :2], boxes2[:, :2])
     rb = torch.max(boxes1[:, None, 2:], boxes2[:, 2:])
     if print_flag:
-        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, lt : {lt}")
-        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, rb : {rb}")
+        print(f"GBIOU -> lt : {lt.size()}")
+        print(f"GBIOU -> rb : {rb.size()}")
 
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     area = wh[:, :, 0] * wh[:, :, 1]
     if print_flag:
-        print(f"GBIOU -> wh : {wh}, wh[:, :, 0] : {wh[:, :, 0]}, wh[:, :, 1] : {wh[:, :, 1]}, area : {area}")
-        print(f"GBIOU -> iou - (area - union) / area : {iou - (area - union) / area}")
+        print(f"GBIOU -> wh : {wh.size()}, wh[:, :, 0] : {wh[:, :, 0].size()}, wh[:, :, 1] : {wh[:, :, 1].size()}, area : {area.size()}")
+        temp_giou = iou - (area - union) / area
+        print(f"GBIOU -> Size of iou - (area - union) / area : {temp_giou.size()}")
     
     return iou - (area - union) / area
 
