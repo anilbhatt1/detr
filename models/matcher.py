@@ -54,7 +54,7 @@ class HungarianMatcher(nn.Module):
         """
         if print_flag:
             print(f"Matcher -> Outputs['pred_logits'].size() : {outputs['pred_logits'].size()}, Outputs['pred_boxes'].size() : {outputs['pred_boxes'].size()}")
-            print(f"Matcher -> targets['labels'].size() : {targets['labels'].size()}, targets['boxes'].size() : {targets['boxes'].size()}")
+            print(f"Matcher -> len(targets) : {len(targets)}, targets[0].keys() : {targets[0].keys()}, targets[0]['labels'].size() : {targets[0]['labels'].size()}, targets[0]['boxes'].size() : {targets[0]['boxes'].size()}")
         bs, num_queries = outputs["pred_logits"].shape[:2]
 
         # We flatten to compute the cost matrices in a batch
