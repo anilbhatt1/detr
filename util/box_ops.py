@@ -59,8 +59,8 @@ def generalized_box_iou(boxes1, boxes2, print_flag):
     lt = torch.min(boxes1[:, None, :2], boxes2[:, :2])
     rb = torch.max(boxes1[:, None, 2:], boxes2[:, 2:])
     if print_flag:
-        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, lt : {lt})
-        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, rb : {rb})
+        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, lt : {lt}")
+        print(f"GBIOU -> boxes1[:, None, :2] : {boxes1[:, None, :2]}, boxes2[:, :2] : {boxes2[:, :2]}, rb : {rb}")
 
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     area = wh[:, :, 0] * wh[:, :, 1]
