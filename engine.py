@@ -41,6 +41,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             print_flag = 1       
         if print_flag:
             sz = samples.tensors.shape
+            print(f"Engine - targets[0].keys() : {targets[0].keys()}")
             print(f"Engine - targets[0] Num boxes: {targets[0]['boxes'].size()}, orig_size : {targets[0]['orig_size']}, size : {targets[0]['size']}")
             print(f"Engine - targets[1] Num boxes: {targets[1]['boxes'].size()}, orig_size : {targets[1]['orig_size']}, size : {targets[1]['size']}")
             print(f'Engine - iter : {iter__}, samples.size() : {sz}, Resnet-stride 32 reshapes to: [{sz[0]},{sz[1]},{math.ceil(sz[2]/32)},{math.ceil(sz[3]/32)}]')
