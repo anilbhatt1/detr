@@ -84,7 +84,7 @@ class HungarianMatcher(nn.Module):
         # Compute the giou cost betwen boxes
         cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox), print_flag)
         if print_flag:
-            print(f"Matcher -> cost_giou : {cost_giou}")
+            print(f"Matcher -> cost_giou.size() : {cost_giou.size()}")
 
         # Final cost matrix
         C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
