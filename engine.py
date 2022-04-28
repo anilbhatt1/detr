@@ -36,7 +36,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         
         
         print_flag = 0
-        if (iter__ == 0 or iter__ == 15) and epoch == 0:
+        if (iter__ == 0 or iter__ == 55) and epoch == 0:
             print('-----------------------------------')
             print_flag = 1       
         if print_flag:
