@@ -106,7 +106,7 @@ class HungarianMatcher(nn.Module):
             temp_indices = []
             for i, c in enumerate(C.split(sizes, -1)):
                 tup = linear_sum_assignment(c[i])            
-                print(f"Matcher -> i : {i}, tup : {tup}, c: {c}")
+                print(f"Matcher -> i : {i}, tup : {tup}, c.size() : {c.size()}, c: {c}")
                 temp_indices.append(tup)
             print(f"Matcher -> temp_indices : {temp_indices}")
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
