@@ -75,6 +75,9 @@ class HungarianMatcher(nn.Module):
         # The 1 is a constant that doesn't change the matching, it can be ommitted.
         cost_class = -out_prob[:, tgt_ids]
         if print_flag:
+            print(f"Matcher -> out_prob : {out_prob}")
+            print(f"Matcher -> tgt_ids : {tgt_ids}")
+            print(f"Matcher -> cost_class : {cost_class}")
             print(f"Matcher -> cost_class.size() : {cost_class.size()}")
         
         # Compute the L1 cost between boxes
