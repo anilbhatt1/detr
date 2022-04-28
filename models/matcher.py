@@ -52,33 +52,41 @@ class HungarianMatcher(nn.Module):
             For each batch element, it holds:
                 len(index_i) = len(index_j) = min(num_queries, num_target_boxes)
         """
-        if print_flag:
-            print(f"Matcher -> Outputs['pred_logits'].size() : {outputs['pred_logits'].size()}, Outputs['pred_boxes'].size() : {outputs['pred_boxes'].size()}, len(targets) : {len(targets)}")
-            print(f"Matcher -> targets[0]['labels'].size() : {targets[0]['labels'].size()}, targets[0]['boxes'].size() : {targets[0]['boxes'].size()}")
-            print(f"Matcher -> targets[1]['labels'].size() : {targets[0]['labels'].size()}, targets[0]['boxes'].size() : {targets[0]['boxes'].size()}")
+        
+        """
+        Let us say we are having batch_size = 2, 1st image has 13 objects and second has 1 object. Also, only 1 class of class_id = 0 is present in dataset.
+        Then Outputs['pred_logits'].size() : torch.Size([2, 100, 2]), Outputs['pred_boxes'].size() : torch.Size([2, 100, 4])
+        Accordingly there will be 2 targets (Ground Truth) as below: 
+        targets[0]['labels'].size() : torch.Size([13]), targets[0]['boxes'].size() : torch.Size([13, 4])
+        targets[1]['labels'].size() : torch.Size([1]),  targets[1]['boxes'].size()  : torch.Size([1, 4])
+        """
         bs, num_queries = outputs["pred_logits"].shape[:2]
 
         # We flatten to compute the cost matrices in a batch
+        # out_prob flattened from [2, 100, 2] to [200, 2] and out_bbox flattened from [2, 100, 4] to [200, 4]
         out_prob = outputs["pred_logits"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, num_classes]
         out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
-        if print_flag:
-            print(f"Matcher -> out_prob.size() : {out_prob.size()}, out_bbox.size() : {out_bbox.size()}")
 
         # Also concat the target labels and boxes
+        # tgt_ids concatenated to torch.Size([14]) and tgt_bbox concatenated to torch.Size([14, 4])
         tgt_ids = torch.cat([v["labels"] for v in targets])
         tgt_bbox = torch.cat([v["boxes"] for v in targets])
-        if print_flag:
-            print(f"Matcher -> tgt_ids.size() : {tgt_ids.size()}, tgt_bbox.size() : {tgt_bbox.size()}")
 
         # Compute the classification cost. Contrary to the loss, we don't use the NLL,
         # but approximate it in 1 - proba[target class].
         # The 1 is a constant that doesn't change the matching, it can be ommitted.
+        """
+        Let us say out_prob of [200, 2] is like tensor([[0.3237, 0.6763],
+                                                        [0.2904, 0.7096],
+                                                        ..
+                                                        [0.4486, 0.5514]]
+        tgt_ids of [14] will be tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
+        Then cost_class will be of size [200, 14] like tensor([[-0.3237, -0.3237, -0.3237,  ..., -0.3237, -0.3237, -0.3237],
+                                                               [-0.2904, -0.2904, -0.2904,  ..., -0.2904, -0.2904, -0.2904],
+                                                               ..
+                                                               [-0.4486, -0.4486, -0.4486,  ..., -0.4486, -0.4486, -0.4486]])
+        """                                    
         cost_class = -out_prob[:, tgt_ids]
-        if print_flag:
-            print(f"Matcher -> out_prob : {out_prob}")
-            print(f"Matcher -> tgt_ids : {tgt_ids}")
-            print(f"Matcher -> cost_class : {cost_class}")
-            print(f"Matcher -> cost_class.size() : {cost_class.size()}")
         
         # Compute the L1 cost between boxes
         cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
@@ -86,6 +94,7 @@ class HungarianMatcher(nn.Module):
             print(f"Matcher -> cost_bbox.size() : {cost_bbox.size()}")
 
         # Compute the giou cost betwen boxes
+        # cost_giou will be [200, 14] 
         cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox), print_flag)
         if print_flag:
             print(f"Matcher -> cost_giou.size() : {cost_giou.size()}")
@@ -94,24 +103,19 @@ class HungarianMatcher(nn.Module):
         C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
         if print_flag:
             print(f"Matcher -> C.size() before view: {C.size()}")
+        
+        # C [200, 14] will be changed to [2, 100, 14]
         C = C.view(bs, num_queries, -1).cpu()
         if print_flag:
             print(f"Matcher -> C.size() after view: {C.size()}")        
 
-        # Let us say we are having batch_size =2, 1st image has 13 objects and second has 1 object. Then sizes = [13, 1]    
+        # Let us say we are having batch_size = 2, 1st image has 13 objects and second has 1 object. Then sizes = [13, 1]    
         sizes = [len(v["boxes"]) for v in targets]  
-        # C.size() will be [2, 100, 14] 
-        # C.split() will split it to 
-        if print_flag: 
-            temp_indices = []
-            for i, c in enumerate(C.split(sizes, -1)):
-                tup = linear_sum_assignment(c[i])            
-                print(f"Matcher -> i : {i}, tup : {tup}, c.size() : {c.size()}, c: {c}")
-                temp_indices.append(tup)
-            print(f"Matcher -> temp_indices : {temp_indices}")
+        
+        # C.size() will be [2, 100, 14]. This will be split to [2, 100, 13] and [2, 100, 1].
+        # linear_sum_assignment will give list of indices with optimal assignment [ (13 row_indices, 13 col_indices), (1 row_indices, 1 col_indices)]
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
-        if print_flag:
-            print(f"Matcher -> indices : {indices}")
+
         return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
 
 def build_matcher(args):
