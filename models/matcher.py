@@ -89,27 +89,21 @@ class HungarianMatcher(nn.Module):
         cost_class = -out_prob[:, tgt_ids]
         
         # Compute the L1 cost between boxes
+        # cost_bbox.size() will be [200, 14] for the example we are considering
         cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
-        if print_flag:
-            print(f"Matcher -> cost_bbox.size() : {cost_bbox.size()}")
 
         # Compute the giou cost betwen boxes
-        # cost_giou will be [200, 14] 
+        # cost_giou will be [200, 14] for the example we are considering
         cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox), print_flag)
-        if print_flag:
-            print(f"Matcher -> cost_giou.size() : {cost_giou.size()}")
 
         # Final cost matrix
+        # C.size() also will be [200, 14] for the example we are considering
         C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
-        if print_flag:
-            print(f"Matcher -> C.size() before view: {C.size()}")
         
         # C [200, 14] will be changed to [2, 100, 14]
-        C = C.view(bs, num_queries, -1).cpu()
-        if print_flag:
-            print(f"Matcher -> C.size() after view: {C.size()}")        
+        C = C.view(bs, num_queries, -1).cpu()      
 
-        # Let us say we are having batch_size = 2, 1st image has 13 objects and second has 1 object. Then sizes = [13, 1]    
+        # Since we are having batch_size = 2, 1st image has 13 objects and second has 1 object. so sizes = [13, 1]    
         sizes = [len(v["boxes"]) for v in targets]  
         
         # C.size() will be [2, 100, 14]. This will be split to [2, 100, 13] and [2, 100, 1].
