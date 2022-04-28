@@ -98,9 +98,16 @@ class HungarianMatcher(nn.Module):
         if print_flag:
             print(f"Matcher -> C.size() after view: {C.size()}")        
 
-        sizes = [len(v["boxes"]) for v in targets]
-        if print_flag:
-            print(f"Matcher -> sizes : {sizes}")
+        # Let us say we are having batch_size =2, 1st image has 13 objects and second has 1 object. Then sizes = [13, 1]    
+        sizes = [len(v["boxes"]) for v in targets]  
+        # C.size() will be [2, 100, 14] 
+        # C.split() will split it to 
+        temp_indices = []
+        for i, c in enumerate(C.split(sizes, -1)):
+            tup = linear_sum_assignment(c[i])
+            print(f"Matcher -> i : {i}, tup : {tup}, c: {c}")
+            temp_indices.append(tup)
+        print(f"Matcher -> temp_indices : {temp_indices}")
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
         if print_flag:
             print(f"Matcher -> indices : {indices}")
