@@ -102,17 +102,17 @@ class HungarianMatcher(nn.Module):
         sizes = [len(v["boxes"]) for v in targets]  
         # C.size() will be [2, 100, 14] 
         # C.split() will split it to 
-        temp_indices = []
-        for i, c in enumerate(C.split(sizes, -1)):
-            tup = linear_sum_assignment(c[i])
-            print(f"Matcher -> i : {i}, tup : {tup}, c: {c}")
-            temp_indices.append(tup)
-        print(f"Matcher -> temp_indices : {temp_indices}")
+        if print_flag: 
+            temp_indices = []
+            for i, c in enumerate(C.split(sizes, -1)):
+                tup = linear_sum_assignment(c[i])            
+                print(f"Matcher -> i : {i}, tup : {tup}, c: {c}")
+                temp_indices.append(tup)
+            print(f"Matcher -> temp_indices : {temp_indices}")
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
         if print_flag:
             print(f"Matcher -> indices : {indices}")
         return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
-
 
 def build_matcher(args):
     return HungarianMatcher(cost_class=args.set_cost_class, cost_bbox=args.set_cost_bbox, cost_giou=args.set_cost_giou)
