@@ -99,7 +99,11 @@ class HungarianMatcher(nn.Module):
             print(f"Matcher -> C.size() after view: {C.size()}")        
 
         sizes = [len(v["boxes"]) for v in targets]
+        if print_flag:
+            print(f"Matcher -> sizes : {sizes}")
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
+        if print_flag:
+            print(f"Matcher -> indices : {indices}")
         return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
 
 
