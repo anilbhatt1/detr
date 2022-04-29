@@ -90,6 +90,8 @@ class HungarianMatcher(nn.Module):
         
         # Compute the L1 cost between boxes
         # cost_bbox.size() will be [200, 14] for the example we are considering
+        # torch.cdist -> Computes batched the p-norm distance (manhattan metric) between each pair of the two collections of row vectors.
+        # out_bbox -> [200, 4] tgt_bbox -> [14, 4] will give cost_bbox -> [200, 14]
         cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
 
         # Compute the giou cost betwen boxes
