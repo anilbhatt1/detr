@@ -22,7 +22,7 @@ def box_cxcywh_to_xyxy(x):
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
     temp = torch.stack(b, dim=-1)
-    print(f"Util -> box_cxcywh_to_xyxy -> temp.size() : {temp.size()}, len(b) : {len(b[0], len(b[1])}")
+    print(f"Util -> box_cxcywh_to_xyxy -> temp.size() : {temp.size()}, len(b) : {len(b[0]), len(b[1])}")
     return torch.stack(b, dim=-1)
 
 
