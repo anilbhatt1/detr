@@ -6,8 +6,10 @@ import torch
 from torchvision.ops.boxes import box_area
 
 
-def box_cxcywh_to_xyxy(x):
+def box_cxcywh_to_xyxy(x):    
     x_c, y_c, w, h = x.unbind(-1)
+    print(f"Util -> box_cxcywh_to_xyxy -> x.size() : {x.size()}, x.unbind(-1).size() : {x.unbind(-1).size()}")
+    print(f"Util -> box_cxcywh_to_xyxy -> x_c.size() : {x_c.size()}, y_c.size() : {y_c.size()}, w.size() : {w.size()}, h.size() : {h.size()}")
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
     return torch.stack(b, dim=-1)
