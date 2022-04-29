@@ -8,14 +8,21 @@ from torchvision.ops.boxes import box_area
 """
 Let us say we are passing out_bbox of [200, 4] and tgt_bbox of [14, 4] to box_cxcywh_to_xyxy.
 x.unbind(-1) will return tuples of len 200 and 14 respectively.
-Each tuple will have (x_c, y_c, w, h) ie unbind of out_bbox will give a tuple of 200 bbbox coordinates whereas tgt_bbox of 14 bbox coordinates
+Each tuple will have (x_c, y_c, w, h) ie unbind of out_bbox will give a tuple of 200 bbox coordinates whereas tgt_bbox of 14 bbox coordinates
+b will be a list of length 4 as shown for out_bbox-> [ [lt_x1, lt_y1, rb_x1, rb_y1
+                                                        ..   , ..   , ..   , ..
+                                                        lt_x200, lt_y200, rb_x200, rb_y200]
+b will be a list of length 14 as shown for tgt_bbox-> [lt_x1, lt_y1, rb_x1, rb_y1
+                                                       ..   , ..   , ..   , ..
+                                                      lt_x14, lt_y14, rb_x14, rb_y14]    
+Then b
 """
 def box_cxcywh_to_xyxy(x):        
     x_c, y_c, w, h = x.unbind(-1)
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
     temp = torch.stack(b, dim=-1)
-    print(f"Util -> box_cxcywh_to_xyxy -> temp.size() : {temp.size()}, len(b) : {len(b)}")
+    print(f"Util -> box_cxcywh_to_xyxy -> temp.size() : {temp.size()}, len(b) : {len(b[0], len(b[1])}")
     return torch.stack(b, dim=-1)
 
 
