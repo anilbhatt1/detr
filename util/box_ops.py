@@ -9,20 +9,25 @@ from torchvision.ops.boxes import box_area
 Let us say we are passing out_bbox of [200, 4] and tgt_bbox of [14, 4] to box_cxcywh_to_xyxy.
 x.unbind(-1) will return tuples of len 200 and 14 respectively.
 Each tuple will have (x_c, y_c, w, h) ie unbind of out_bbox will give a tuple of 200 bbox coordinates whereas tgt_bbox of 14 bbox coordinates
-b will be a list of length 4 as shown for out_bbox-> [ [lt_x1, lt_y1, rb_x1, rb_y1
-                                                        ..   , ..   , ..   , ..
-                                                        lt_x200, lt_y200, rb_x200, rb_y200]
-b will be a list of length 14 as shown for tgt_bbox-> [lt_x1, lt_y1, rb_x1, rb_y1
-                                                       ..   , ..   , ..   , ..
-                                                      lt_x14, lt_y14, rb_x14, rb_y14]    
-Then b
+b will be a list of length 4 each having 200 elements as shown for out_bbox-> [[lt_x1, lt_x2, ...., lt_x200],
+                                                                               [lt_y1, lt_y2, ...., lt_y200],
+                                                                               [rb_x1, rb_x2, ...., rb_x200],
+                                                                               [rb_y1, rb_y2, ...., rb_y200] ]  lt -> left top, rb -> right bottom
+Similarly b will be a list of length 4 each having 14 elements as shown for tgt_bbox->  [[lt_x1, lt_x2, ...., lt_x14],
+                                                                                         [lt_y1, lt_y2, ...., lt_y14],
+                                                                                         [rb_x1, rb_x2, ...., rb_x14],
+                                                                                         [rb_y1, rb_y2, ...., rb_y14]] 
+Then b will be stacked torch.stack(b, dim=-1), for out_bbox it will be [200, 4] like [lt_x1, lt_y1, rb_x1, rb_y1]
+                                                                                      .. 
+                                                                                     [lt_x200, lt_y200, rb_x200, rb_y200] 
+                                               for tgt_bbox it will be [14, 4] like [lt_x1, lt_y1, rb_x1, rb_y1]
+                                                                                      .. 
+                                                                                     [lt_x14, lt_y14, rb_x14, rb_y14]                                                                                      
 """
 def box_cxcywh_to_xyxy(x):        
     x_c, y_c, w, h = x.unbind(-1)
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
-    temp = torch.stack(b, dim=-1)
-    print(f"Util -> box_cxcywh_to_xyxy -> temp.size() : {temp.size()}, len(b) : {len(b[0]), len(b[1])}")
     return torch.stack(b, dim=-1)
 
 
@@ -34,15 +39,19 @@ def box_xyxy_to_cxcywh(x):
 
 
 # modified from torchvision to also return the union
-def box_iou(boxes1, boxes2):
+def box_iou(boxes1, boxes2, print_flag):
     area1 = box_area(boxes1)
     area2 = box_area(boxes2)
+    if print_flag:
+        print(f"box_iou boxes1 : {boxes1.size()}, boxes2 : {boxes2.size()}, area1 : {area1.size()}, area2 : {area2.size()}")
 
     lt = torch.max(boxes1[:, None, :2], boxes2[:, :2])  # [N,M,2]
     rb = torch.min(boxes1[:, None, 2:], boxes2[:, 2:])  # [N,M,2]
 
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
+    if print_flag:
+        print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
 
     union = area1[:, None] + area2 - inter
 
@@ -63,7 +72,7 @@ def generalized_box_iou(boxes1, boxes2, print_flag):
     # so do an early check
     assert (boxes1[:, 2:] >= boxes1[:, :2]).all()
     assert (boxes2[:, 2:] >= boxes2[:, :2]).all()
-    iou, union = box_iou(boxes1, boxes2)
+    iou, union = box_iou(boxes1, boxes2, print_flag)
     if print_flag:
         print(f"GBIOU -> boxes1 : {boxes1.size()}, boxes2 : {boxes2.size()}, iou : {iou.size()}, union : {union.size()}")
 
