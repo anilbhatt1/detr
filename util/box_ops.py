@@ -43,6 +43,7 @@ def box_xyxy_to_cxcywh(x):
 torchvision.ops.boxes.box_area -> Computes the area of a set of bounding boxes, which are specified by their (x1, y1, x2, y2) coordinates.
 boxes1 -> Comes from out_bbox of [200, 4] so area1 -> [200]
 boxes2 -> Comes from tgt_bbox of [14, 4] so area2 -> [14]
+boxes1[:, None, :2] -> 
 """
 def box_iou(boxes1, boxes2, print_flag):
     area1 = box_area(boxes1)
@@ -57,9 +58,9 @@ def box_iou(boxes1, boxes2, print_flag):
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
     if print_flag:
         print(f"box_iou boxes1 : {boxes1}")
-        print(f"box_iou lt boxes1[:, None, :2] : {boxes1[:, None, :2]}")
+        print(f"box_iou lt boxes1[:, None, :2] : {boxes1[:, None, :2].size()}, {boxes1[:, None, :2]}")
         print(f"box_iou boxes2 : {boxes2}")
-        print(f"box_iou lt boxes2[:, :2] : {boxes2[:, :2]}")  
+        print(f"box_iou lt boxes2[:, :2] : {{boxes2[:, :2].size()}, {boxes2[:, :2]}")  
         print(f"box_iou lt : {lt}")
         print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
 
