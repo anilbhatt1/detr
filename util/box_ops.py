@@ -60,7 +60,7 @@ def box_iou(boxes1, boxes2, print_flag):
         print(f"box_iou boxes1 : {boxes1}")
         print(f"box_iou lt boxes1[:, None, :2] : {boxes1[:, None, :2].size()}, {boxes1[:, None, :2]}")
         print(f"box_iou boxes2 : {boxes2}")
-        print(f"box_iou lt boxes2[:, :2] : {{boxes2[:, :2].size()}, {boxes2[:, :2]}")  
+        print(f"box_iou lt boxes2[:, :2] : {boxes2[:, :2].size()}, {boxes2[:, :2]}")  
         print(f"box_iou lt : {lt}")
         print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
 
