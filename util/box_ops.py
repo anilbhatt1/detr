@@ -70,7 +70,9 @@ lt -> tensor([[[0.1910, 0.2757],  -> First row [-2.3103e-03,  2.7565e-01] compar
                [0.3477, 0.3764],                 (0.034362)   (0.068599)                            [0.3477, 0.3764],
                ..                                                                                   ..
                [0.0366, 0.0697]]])                                                                  [0.0366, 0.0697]])
-Similarly rt is also calculated but with min of coordinates.
+Similarly rb is also calculated but with min of coordinates.
+rb -> tensor([[[0.0789, 0.6136],
+
 
 Next step is to calculate wh (width & height) from lt & rb.
 
@@ -86,7 +88,8 @@ def box_iou(boxes1, boxes2, print_flag):
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
     if print_flag:
-        print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")       
+        print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
+        print(f"box_iou lt : {lt}")
         print(f"box_iou rb : {rb}")
         print(f"box_iou wh : {wh}") 
 
