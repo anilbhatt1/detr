@@ -73,10 +73,10 @@ lt -> tensor([[[0.1910, 0.2757],  -> First row [-2.3103e-03,  2.7565e-01] compar
 Similarly rb is also calculated but with min of coordinates.
 rb -> tensor([[[0.0789, 0.6136],
 
-
 Next step is to calculate wh (width & height) from lt & rb.
-
-
+wh = (rb - lt).clamp(min=0) -> [200, 14, 2] where difference in x-coordinates give w & difference in y-coordinates give h.
+wh[:, :, 0] -> width, wh[:, :, 1] -> height 
+So wh[:, :, 0] * wh[:, :, 1] -> intersection area of [200, 14]
 """
 def box_iou(boxes1, boxes2, print_flag):
     area1 = box_area(boxes1)
@@ -87,13 +87,9 @@ def box_iou(boxes1, boxes2, print_flag):
 
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
-    if print_flag:
-        print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
-        print(f"box_iou lt : {lt}")
-        print(f"box_iou rb : {rb}")
-        print(f"box_iou wh : {wh}") 
-
     union = area1[:, None] + area2 - inter
+    if print_flag:
+        print(f"area1[:, None].size() : {area1[:, None].size()}, area2.size() : {area2.size()}, union.size() : {union.size()}")
 
     iou = inter / union
     return iou, union
