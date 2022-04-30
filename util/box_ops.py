@@ -43,7 +43,7 @@ def box_xyxy_to_cxcywh(x):
 torchvision.ops.boxes.box_area -> Computes the area of a set of bounding boxes, which are specified by their (x1, y1, x2, y2) coordinates.
 boxes1 -> Comes from out_bbox of [200, 4] so area1 -> [200]
 boxes2 -> Comes from tgt_bbox of [14, 4] so area2 -> [14]
-Calculation of lt and rb are as follows:
+Calculation of lt (left-top coordinate) and rb (right-bottom coordinate) are as follows:
 
 boxes1[:, None, :2] -> ([200, 1, 2])
 boxes1: tensor([[-2.3103e-03,  2.7565e-01,  7.7548e-02,  9.8273e-01],     boxes1[:, None, :2] : tensor([[[-2.3103e-03,  2.7565e-01]],
@@ -70,7 +70,11 @@ lt -> tensor([[[0.1910, 0.2757],  -> First row [-2.3103e-03,  2.7565e-01] compar
                [0.3477, 0.3764],                 (0.034362)   (0.068599)                            [0.3477, 0.3764],
                ..                                                                                   ..
                [0.0366, 0.0697]]])                                                                  [0.0366, 0.0697]])
-Similarly rt is also calculated.
+Similarly rt is also calculated but with min of coordinates.
+
+Next step is to calculate wh (width & height) from lt & rb.
+
+
 """
 def box_iou(boxes1, boxes2, print_flag):
     area1 = box_area(boxes1)
@@ -82,7 +86,9 @@ def box_iou(boxes1, boxes2, print_flag):
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
     if print_flag:
-        print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
+        print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")       
+        print(f"box_iou rb : {rb}")
+        print(f"box_iou wh : {wh}") 
 
     union = area1[:, None] + area2 - inter
 
