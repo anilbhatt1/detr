@@ -43,13 +43,38 @@ def box_xyxy_to_cxcywh(x):
 torchvision.ops.boxes.box_area -> Computes the area of a set of bounding boxes, which are specified by their (x1, y1, x2, y2) coordinates.
 boxes1 -> Comes from out_bbox of [200, 4] so area1 -> [200]
 boxes2 -> Comes from tgt_bbox of [14, 4] so area2 -> [14]
-boxes1[:, None, :2] -> 
+Calculation of lt and rb are as follows:
+
+boxes1[:, None, :2] -> ([200, 1, 2])
+boxes1: tensor([[-2.3103e-03,  2.7565e-01,  7.7548e-02,  9.8273e-01],     boxes1[:, None, :2] : tensor([[[-2.3103e-03,  2.7565e-01]],
+                [ 2.3402e-01,  1.3517e-01,  7.7009e-01,  3.8345e-01]   ->                               [[ 2.3402e-01,  1.3517e-01]],
+                ..                                                                                      ..
+                [ 3.4362e-02,  6.8599e-02,  7.7951e-01,  3.3515e-01]])                                  [[ 3.4362e-02,  6.8599e-02]]])
+                
+boxes2[:, :2] -> ([14, 2])
+boxes2: tensor([[0.1910, 0.2559, 0.7207, 0.6136]        boxes2[:, :2] : tensor([[0.1910, 0.2559]
+                [0.3477, 0.3764, 1.0000, 0.9509],                               [0.3477, 0.3764],
+                ..                                   ->                          ..
+                [0.0366, 0.0697, 0.4580, 0.7051]])                              [0.0366, 0.0697]])
+                
+lt = torch.max(boxes1[:, None, :2], boxes2[:, :2]) -> ([200, 14, 2])
+Each row of boxes1[:, None, :2] is compared against 14 rows of boxes2[:, :2] and max is fetched. Thus each row of boxes1[:, None, :2] will produce 14 rows
+getting a shape of ([200, 14, 2]).
+lt -> tensor([[[0.1910, 0.2757],  -> First row [-2.3103e-03,  2.7565e-01] compared against tensor([[0.1910, 0.2559],
+               [0.3477, 0.3764],                (-0.0023103)  (0.27565)                            [0.3477, 0.3764],
+               ..                                                                                  ..                 
+               [0.0366, 0.2757]]                                                                   [0.0366, 0.0697]])
+               .
+               .               
+              [[0.1910, 0.2559],  -> 200th row [ 3.4362e-02,  6.8599e-02] compared against  tensor([[0.1910, 0.2559]
+               [0.3477, 0.3764],                 (0.034362)   (0.068599)                            [0.3477, 0.3764],
+               ..                                                                                   ..
+               [0.0366, 0.0697]]])                                                                  [0.0366, 0.0697]])
+Similarly rt is also calculated.
 """
 def box_iou(boxes1, boxes2, print_flag):
     area1 = box_area(boxes1)
     area2 = box_area(boxes2)
-    if print_flag:
-        print(f"box_iou boxes1 : {boxes1.size()}, boxes2 : {boxes2.size()}, area1 : {area1.size()}, area2 : {area2.size()}")
 
     lt = torch.max(boxes1[:, None, :2], boxes2[:, :2])  # [N,M,2]
     rb = torch.min(boxes1[:, None, 2:], boxes2[:, 2:])  # [N,M,2]
@@ -57,11 +82,6 @@ def box_iou(boxes1, boxes2, print_flag):
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
     if print_flag:
-        print(f"box_iou boxes1 : {boxes1}")
-        print(f"box_iou lt boxes1[:, None, :2] : {boxes1[:, None, :2].size()}, {boxes1[:, None, :2]}")
-        print(f"box_iou boxes2 : {boxes2}")
-        print(f"box_iou lt boxes2[:, :2] : {boxes2[:, :2].size()}, {boxes2[:, :2]}")  
-        print(f"box_iou lt : {lt}")
         print(f"box_iou lt : {lt.size()}, rb : {rb.size()}, wh: {wh.size()}, inter : {inter.size()}")   
 
     union = area1[:, None] + area2 - inter
