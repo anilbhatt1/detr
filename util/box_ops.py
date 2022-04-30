@@ -77,6 +77,13 @@ Next step is to calculate wh (width & height) from lt & rb.
 wh = (rb - lt).clamp(min=0) -> [200, 14, 2] where difference in x-coordinates give w & difference in y-coordinates give h.
 wh[:, :, 0] -> width, wh[:, :, 1] -> height 
 So wh[:, :, 0] * wh[:, :, 1] -> intersection area of [200, 14]
+
+Next step is to calculate union
+union = area1[:, None] + area2 - inter
+area1[:, None] -> [200, 1] + area2 -> [14] will give tensor of [200, 14] which is subtracted - from inter [200, 14] to give union [200, 14]
+
+Next iou = inter -> [200, 14] / union -> [200, 14] is calculated
+iou -> torch.Size([200, 14]
 """
 def box_iou(boxes1, boxes2, print_flag):
     area1 = box_area(boxes1)
@@ -88,9 +95,6 @@ def box_iou(boxes1, boxes2, print_flag):
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
     union = area1[:, None] + area2 - inter
-    if print_flag:
-        print(f"area1[:, None].size() : {area1[:, None].size()}, area2.size() : {area2.size()}, union.size() : {union.size()}")
-
     iou = inter / union
     return iou, union
 
