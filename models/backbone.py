@@ -92,6 +92,12 @@ class Backbone(BackboneBase):
         num_channels = 512 if name in ('resnet18', 'resnet34') else 2048
         super().__init__(backbone, train_backbone, num_channels, return_interm_layers)
 
+'''
+Backbone with resnet50 is built.
+Let us say, we are passing batch_size of 2 with samples_size : ([2, 3, 852, 640]), then with stride of 32, 
+and model.num_channels: 2048 we passed as args to backbobe, out.size() will be ([2, 2048, 17, 26]).
+position_embedding will be sine based and will have shape ([2, 256, 17, 26]).
+'''
 
 class Joiner(nn.Sequential):
     def __init__(self, backbone, position_embedding):
