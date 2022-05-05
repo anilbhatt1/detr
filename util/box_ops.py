@@ -70,8 +70,7 @@ lt -> tensor([[[0.1910, 0.2757],  -> First row [-2.3103e-03,  2.7565e-01] compar
                [0.3477, 0.3764],                 (0.034362)   (0.068599)                            [0.3477, 0.3764],
                ..                                                                                   ..
                [0.0366, 0.0697]]])                                                                  [0.0366, 0.0697]])
-Similarly rb is also calculated but with min of coordinates.
-rb -> tensor([[[0.0789, 0.6136],
+Similarly rb is also calculated but using torch.min of coordinates.
 
 Next step is to calculate wh (width & height) from lt & rb.
 wh = (rb - lt).clamp(min=0) -> [200, 14, 2] where difference in x-coordinates give w & difference in y-coordinates give h.
@@ -110,24 +109,21 @@ def generalized_box_iou(boxes1, boxes2, print_flag):
     """
     # degenerate boxes gives inf / nan results
     # so do an early check
+    '''
+    For GIOU, iou & union that we got from box_iou is used whereas area used in equation is calculated differently from box_iou.
+    Difference is that lt is calculated with torch.min and rb is calculated with torch.max.
+    Rest of area calculation is same as that we seen in box_iou.
+    GIOU will be of shape [200, 14] for the example batch we are considering.
+    '''
     assert (boxes1[:, 2:] >= boxes1[:, :2]).all()
     assert (boxes2[:, 2:] >= boxes2[:, :2]).all()
     iou, union = box_iou(boxes1, boxes2, print_flag)
-    if print_flag:
-        print(f"GBIOU -> boxes1 : {boxes1.size()}, boxes2 : {boxes2.size()}, iou : {iou.size()}, union : {union.size()}")
 
     lt = torch.min(boxes1[:, None, :2], boxes2[:, :2])
     rb = torch.max(boxes1[:, None, 2:], boxes2[:, 2:])
-    if print_flag:
-        print(f"GBIOU -> lt : {lt.size()}")
-        print(f"GBIOU -> rb : {rb.size()}")
 
     wh = (rb - lt).clamp(min=0)  # [N,M,2]
     area = wh[:, :, 0] * wh[:, :, 1]
-    if print_flag:
-        print(f"GBIOU -> wh : {wh.size()}, wh[:, :, 0] : {wh[:, :, 0].size()}, wh[:, :, 1] : {wh[:, :, 1].size()}, area : {area.size()}")
-        temp_giou = iou - (area - union) / area
-        print(f"GBIOU -> Size of iou - (area - union) / area : {temp_giou.size()}")
     
     return iou - (area - union) / area
 
