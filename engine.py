@@ -29,11 +29,17 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     iter__ = 0
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
            
-        
+        '''
+        targets.keys() -> ['boxes', 'labels', 'image_id', 'area', 'iscrowd', 'orig_size', 'size']
+        targets['orig_size'] has the original size of images. But targets['size'] will be the one that will be used.
+        Let us say, we have batch_size = 2 having size : tensor([544, 694]) and size : tensor([544, 817]). Then,
+        samples_size will be ([2, 3, 544, 817]).
+        Similarly for size : tensor([852, 640]) and size : tensor([648, 640]), samples_size will be ([2, 3, 852, 640]).
+        After passing through backbone - in this case resnet-50 of stride 32 - samples_size will get reduced to [27, 20]
+        '''
 
         samples = samples.to(device)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]        
         
         print_flag = 0
         if (iter__ == 0 or iter__ == 55) and epoch == 0:
