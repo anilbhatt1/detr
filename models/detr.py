@@ -138,9 +138,9 @@ class SetCriterion(nn.Module):
         Basically, we are preparing target. In original targets[0]['labels'] we have tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0').
         This means for 1st image, 13 objects are present. Our output is src_logits which is of shape [2, 100, 2] where 2 -> Batch size, 100 -> Upto 100 objects
         detected, 2 -> of which 1st one logits. So, we need to make our 13 length target for 1st object to [1,100] length format.
-        We will find index of top 13 logits from output. Then we will prepare target_classes with [2,100] with all as no-objects. Then will assign class-id
-        to those indexes belonging to top 13 logits for [1st, 100]. This will take-care of target for 1st image. We will prepare similarly for 2nd image too
-        by assigning class-id to [2nd, 100].
+        We will get matching index of top 13 logits from output (Hungarian matcher). Then we will prepare target_classes with [2,100] with all as no-objects. 
+        Then will assign class-id to those indexes belonging to top 13 logits for [1st, 100]. This will take-care of target for 1st image. We will prepare 
+        similarly for 2nd image too by assigning class-id to [2nd, 100].
         '''
         target_classes[idx] = target_classes_o        
        
