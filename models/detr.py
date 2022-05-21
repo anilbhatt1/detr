@@ -208,28 +208,34 @@ class SetCriterion(nn.Module):
             "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
         }
         return losses
-
+    '''
+    Let us say there are 2 images in a batch - 1st image has 13 objects & 2nd image has 1 object.
+    Hungarian matcher will give us the matching indexes from both output and target. Let us say matching indices found by matcher are as follows:
+    indices: [(tensor([ 2, 10, 13, 14, 16, 20, 28, 31, 68, 78, 81, 91, 92]), tensor([12,  5,  6,  3, 11,  1,  9,  2, 10,  8,  0,  7,  4])), 
+              (tensor([45]), tensor([0]))]
+    Here 1st element in tuple belongs to model output and 2nd element belongs to ground truth target.
+    In this scenario, batch_idx will be batch_idx: tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
+    whereas src_idx will be tensor([ 2, 10, 13, 14, 16, 20, 28, 31, 68, 78, 81, 91, 92, 45])
+    This means indices 2 till 92 belongs 0th image of batch whereas 45 belongs to 1st image of batch.
+    '''
     def _get_src_permutation_idx(self, indices, print_flag):
         # permute predictions following indices
                    
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
-        src_idx = torch.cat([src for (src, _) in indices])
-        
-        if print_flag:
-          print(f'_get_src_permutation_idx -> indices: {indices}')
-          lst1 = [torch.full_like(src, i) for i, (src, _) in enumerate(indices)]
-          lst2 = [src for (src, _) in indices]
-          print('lst1:', lst1)
-          print('lst2:', lst2)
-          print('batch_idx:', batch_idx)
-          print('src_idx:', src_idx)
-        
+        src_idx = torch.cat([src for (src, _) in indices])        
+       
         return batch_idx, src_idx
 
     def _get_tgt_permutation_idx(self, indices):
         # permute targets following indices
         batch_idx = torch.cat([torch.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
         tgt_idx = torch.cat([tgt for (_, tgt) in indices])
+        
+        if print_flag:
+          print(f'_get_tgt_permutation_idx -> indices: {indices}')
+          print('batch_idx:', batch_idx)
+          print('src_idx:', src_idx)       
+        
         return batch_idx, tgt_idx
 
     def get_loss(self, loss, outputs, targets, indices, num_boxes, print_flag, **kwargs):
