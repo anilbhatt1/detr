@@ -56,6 +56,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         outputs = model(samples, print_flag)
         if print_flag:
             print(f'Engine - outputs : {outputs.keys()}')
+            print(f'Engine - pred_logits: {outputs['pred_logits'].size()}, pred_boxes: {outputs['pred_boxes'].size()}, aux_o/p: {outputs['aux_outputs'].size()}')
         loss_dict = criterion(outputs, targets, print_flag)
         if print_flag:
             print('Engine - loss_dict:', loss_dict)
