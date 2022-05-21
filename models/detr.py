@@ -217,6 +217,8 @@ class SetCriterion(nn.Module):
     In this scenario, batch_idx will be batch_idx: tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
     whereas src_idx will be tensor([ 2, 10, 13, 14, 16, 20, 28, 31, 68, 78, 81, 91, 92, 45])
     This means indices 2 till 92 belongs 0th image of batch whereas 45 belongs to 1st image of batch.
+    _get_src_permutation_idx -> Prepares indices this way for model output
+    _get_tgt_permutation_idx -> Prepares indices this way for target
     '''
     def _get_src_permutation_idx(self, indices, print_flag):
         # permute predictions following indices
@@ -229,12 +231,7 @@ class SetCriterion(nn.Module):
     def _get_tgt_permutation_idx(self, indices):
         # permute targets following indices
         batch_idx = torch.cat([torch.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
-        tgt_idx = torch.cat([tgt for (_, tgt) in indices])
-        
-        if print_flag:
-          print(f'_get_tgt_permutation_idx -> indices: {indices}')
-          print('batch_idx:', batch_idx)
-          print('src_idx:', src_idx)       
+        tgt_idx = torch.cat([tgt for (_, tgt) in indices])     
         
         return batch_idx, tgt_idx
 
