@@ -137,6 +137,8 @@ class SetCriterion(nn.Module):
         target_classes[idx] = target_classes_o
         
         if print_flag:
+          print(f"targets[0]['labels'] : {targets[0]['labels']"}
+          print(f"targets[1]['labels'] : {targets[1]['labels']"}
           print(f'src_logits.transpose(1, 2) : {src_logits.transpose(1, 2)}')
           print(f'target_classes : {target_classes}')
         
