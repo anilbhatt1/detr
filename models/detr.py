@@ -124,21 +124,22 @@ class SetCriterion(nn.Module):
 
         # idx is (batch_idx, src_idx). Check _get_src_permutation_idx for more details.
         idx = self._get_src_permutation_idx(indices, print_flag)
-        if print_flag:
-          print(f'setcriterion -> idx : {idx}')
-          print(f"setcriterion -> len(targets) : {len(targets)}")        
+        
+        # For the example we are following ie bs =2 , 1st image-13 objects, 2nd image-1 object, 0 - class id for object , 1 - no-object
+        # target_classes_o = tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] -> 13 elements with 0s
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
-        if print_flag:
-          print(f'setcriterion -> target_classes_o : {target_classes_o}')      
-          print(f'setcriterion -> src_logits.shape : {src_logits.shape}, src_logits.shape[:2] : {src_logits.shape[:2]}, self.num_classes : {self.num_classes}')       
+        
+        # We are preparing a tensor - target_classes of size [2, 100]. This is an initialized tensor with all elements = 1 (no-object = self.num_classes)
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
-        if print_flag:
-          print(f'setcriterion -> target_classes before assignment : {target_classes}') 
+        
+        # Next using (batch_idx, src_idx) we will make those indexes where objects are present as 0. This tensor will be used for loss calculation
         target_classes[idx] = target_classes_o
+        
         if print_flag:
-          print(f'setcriterion -> target_classes after assignment : {target_classes}') 
-
+          print(f'src_logits.transpose(1, 2) : {src_logits.transpose(1, 2)}')
+          print(f'target_classes : {target_classes}')
+        
         loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
 
