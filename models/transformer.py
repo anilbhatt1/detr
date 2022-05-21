@@ -184,18 +184,18 @@ class TransformerEncoderLayer(nn.Module):
                      pos: Optional[Tensor] = None,
                      lyr = 0, print_flag=0):
         q = k = self.with_pos_embed(src, pos)
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TEL forward_post {lyr} q : {q.size()}, k : {k.size()}')
         src2 = self.self_attn(q, k, value=src, attn_mask=src_mask,
                               key_padding_mask=src_key_padding_mask)[0]
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TEL forward_post {lyr} after self_attn - src2 : {src2.size()}')
         src = src + self.dropout1(src2)
         src = self.norm1(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
         src = src + self.dropout2(src2)
         src = self.norm2(src)
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TEL forward_post {lyr} src post +drop1(src2), norm1(src), [linear1, activ, drop, linear2](src), +drop2(src), norm-2(src): {src.size()}')  
         return src
 
@@ -218,8 +218,8 @@ class TransformerEncoderLayer(nn.Module):
                 src_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,
                 lyr = 0, print_flag=0):
-        if (lyr == 1 or lyr == 6) and print_flag:
-            print(f'TEL FWD {lyr} src : {src.size()}, pos : {pos.size()}')
+        if lyr == 1 and print_flag:
+            print(f'TEL forward {lyr} src : {src.size()}, pos : {pos.size()}')
         if self.normalize_before:
             return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
         return self.forward_post(src, src_mask, src_key_padding_mask, pos, lyr, print_flag)
@@ -258,14 +258,14 @@ class TransformerDecoderLayer(nn.Module):
                      pos: Optional[Tensor] = None,
                      query_pos: Optional[Tensor] = None,
                      lyr = 0, print_flag=0):
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TDL forward_post {lyr} tgt.size() : {tgt.size()}, memory.size() : {memory.size()}, pos.size() : {pos.size()}, query_pos.size : {query_pos.size()}') 
         q = k = self.with_pos_embed(tgt, query_pos)
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TDL forward_post {lyr} q : {q.size()}, k : {k.size()}')
         tgt2 = self.self_attn(q, k, value=tgt, attn_mask=tgt_mask,
                               key_padding_mask=tgt_key_padding_mask)[0]
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TDL forward_post {lyr} tgt2 - after self_attn : {tgt2.size()}')
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
@@ -273,14 +273,14 @@ class TransformerDecoderLayer(nn.Module):
                                    key=self.with_pos_embed(memory, pos),
                                    value=memory, attn_mask=memory_mask,
                                    key_padding_mask=memory_key_padding_mask)[0]
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TDL forward_post {lyr} tgt2 - after multiheadattn : {tgt2.size()}')
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt2)
         tgt = self.norm3(tgt)
-        if (lyr == 1 or lyr == 6) and print_flag:
+        if lyr == 1 and print_flag:
             print(f'TDL forward_post {lyr} tgt - after dropouts, linear, activations & norms : {tgt.size()}')
         return tgt
 
@@ -318,8 +318,8 @@ class TransformerDecoderLayer(nn.Module):
         if self.normalize_before:
             return self.forward_pre(tgt, memory, tgt_mask, memory_mask,
                                     tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
-        if (lyr == 1 or lyr == 6) and print_flag:
-            print(f'TDL FWD {lyr} tgt : {tgt.size()}, memory : {memory.size()}, tgt_mask : {type(tgt_mask)}, pos : {pos.size()}, query_pos : {query_pos.size()}')
+        if lyr == 1 and print_flag:
+            print(f'TDL forward {lyr} tgt : {tgt.size()}, memory : {memory.size()}, tgt_mask : {type(tgt_mask)}, pos : {pos.size()}, query_pos : {query_pos.size()}')
         return self.forward_post(tgt, memory, tgt_mask, memory_mask,
                                  tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos, lyr, print_flag)
 
