@@ -214,7 +214,7 @@ class SetCriterion(nn.Module):
         if print_flag:
           print(f'_get_src_permutation_idx -> indices: {indices}')
           for i, (src, x) in enumerate(indices):
-              print(f'_get_src_permutation_idx -> for loop i, src, x : {i, src, x})
+              print(f'_get_src_permutation_idx -> for loop i, src, x : {i, src, x}')
                     
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
