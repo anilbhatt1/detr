@@ -124,16 +124,20 @@ class SetCriterion(nn.Module):
 
         # idx is (batch_idx, src_idx). Check _get_src_permutation_idx for more details.
         idx = self._get_src_permutation_idx(indices, print_flag)
-        print(f'setcriterion -> idx : {idx}')
-        print(f"setcriterion -> type(targets) : {type(targets)}")        
+        if print_flag:
+          print(f'setcriterion -> idx : {idx}')
+          print(f"setcriterion -> len(targets) : {len(targets)}")        
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
-        print(f'setcriterion -> target_classes_o : {target_classes_o}')      
-        print(f'setcriterion -> src_logits.shape : {src_logits.shape}, src_logits.shape[:2] : {src_logits.shape[:2]}, self.num_classes : {self.num_classes}')       
+        if print_flag:
+          print(f'setcriterion -> target_classes_o : {target_classes_o}')      
+          print(f'setcriterion -> src_logits.shape : {src_logits.shape}, src_logits.shape[:2] : {src_logits.shape[:2]}, self.num_classes : {self.num_classes}')       
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
-        print(f'setcriterion -> target_classes before assignment : {target_classes}') 
+        if print_flag:
+          print(f'setcriterion -> target_classes before assignment : {target_classes}') 
         target_classes[idx] = target_classes_o
-        print(f'setcriterion -> target_classes after assignment : {target_classes}') 
+        if print_flag:
+          print(f'setcriterion -> target_classes after assignment : {target_classes}') 
 
         loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
