@@ -211,13 +211,19 @@ class SetCriterion(nn.Module):
 
     def _get_src_permutation_idx(self, indices, print_flag):
         # permute predictions following indices
-        if print_flag:
-          print(f'_get_src_permutation_idx -> indices: {indices}')
-          for i, (src, x) in enumerate(indices):
-              print(f'_get_src_permutation_idx -> for loop i, src, x : {i, src, x}')
-                    
+                   
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
+        
+        if print_flag:
+          print(f'_get_src_permutation_idx -> indices: {indices}')
+          lst1 = [torch.full_like(src, i) for i, (src, _) in enumerate(indices)]
+          lst2 = [src for (src, _) in indices]
+          print('lst1:', lst1)
+          print('lst2:', lst2)
+          print('batch_idx:', batch_idx)
+          print('src_idx:', src_idx)
+        
         return batch_idx, src_idx
 
     def _get_tgt_permutation_idx(self, indices):
