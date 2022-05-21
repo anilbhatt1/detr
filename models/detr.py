@@ -117,10 +117,12 @@ class SetCriterion(nn.Module):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
+        if print_flag:
+          print(f'Setcriterion -> loss_labels')
         assert 'pred_logits' in outputs
         src_logits = outputs['pred_logits']
 
-        idx = self._get_src_permutation_idx(indices)
+        idx = self._get_src_permutation_idx(indices, print_flag)
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
@@ -139,6 +141,9 @@ class SetCriterion(nn.Module):
         """ Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
         This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
         """
+        if print_flag:
+          print(f'Setcriterion -> loss_cardinality')
+          
         pred_logits = outputs['pred_logits']
         device = pred_logits.device
         tgt_lengths = torch.as_tensor([len(v["labels"]) for v in targets], device=device)
@@ -153,8 +158,11 @@ class SetCriterion(nn.Module):
            targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
            The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
         """
+        if print_flag:
+          print(f'Setcriterion -> loss_boxes') 
+          
         assert 'pred_boxes' in outputs
-        idx = self._get_src_permutation_idx(indices)
+        idx = self._get_src_permutation_idx(indices, print_flag)
         src_boxes = outputs['pred_boxes'][idx]
         target_boxes = torch.cat([t['boxes'][i] for t, (_, i) in zip(targets, indices)], dim=0)
 
@@ -173,9 +181,12 @@ class SetCriterion(nn.Module):
         """Compute the losses related to the masks: the focal loss and the dice loss.
            targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
         """
+        if print_flag:
+          print(f'Setcriterion -> loss_masks')
+          
         assert "pred_masks" in outputs
 
-        src_idx = self._get_src_permutation_idx(indices)
+        src_idx = self._get_src_permutation_idx(indices, print_flag)
         tgt_idx = self._get_tgt_permutation_idx(indices)
         src_masks = outputs["pred_masks"]
         src_masks = src_masks[src_idx]
@@ -198,8 +209,13 @@ class SetCriterion(nn.Module):
         }
         return losses
 
-    def _get_src_permutation_idx(self, indices):
+    def _get_src_permutation_idx(self, indices, print_flag):
         # permute predictions following indices
+        if print_flag:
+          print(f'_get_src_permutation_idx -> indices: {indices}')
+          for i, (src, x) in enumerate(indices):
+              print(f'_get_src_permutation_idx -> for loop i, src, x : {i, src, x})
+                    
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
         return batch_idx, src_idx
@@ -227,6 +243,8 @@ class SetCriterion(nn.Module):
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc
         """
+        if print_flag:
+          print(f'Setcrtiterion -> Calculating losses, targets[0].keys() : {targets[0].keys()}')
         outputs_without_aux = {k: v for k, v in outputs.items() if k != 'aux_outputs'}
 
         # Retrieve the matching between the outputs of the last layer and the targets
@@ -240,6 +258,8 @@ class SetCriterion(nn.Module):
         if is_dist_avail_and_initialized():
             torch.distributed.all_reduce(num_boxes)
         num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()
+        if print_flag:
+          print(f"Setcriterion -> num_boxes : {num_boxes}")        
 
         # Compute all the requested losses
         losses = {}
