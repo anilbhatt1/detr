@@ -8,7 +8,7 @@ from torchvision.ops.boxes import box_area
 """
 Let us say we are passing out_bbox of [200, 4] and tgt_bbox of [14, 4] to box_cxcywh_to_xyxy.
 x.unbind(-1) will return tuples of len 200 and 14 respectively.
-Each tuple will have (x_c, y_c, w, h) ie unbind of out_bbox will give a tuple of 200 bbox coordinates whereas tgt_bbox of 14 bbox coordinates
+Each tuple will have (x_c, y_c, w, h) ie unbind of out_bbox will give a tuple of 200 bbox coordinates whereas tgt_bbox of 14 bbox coordinates.
 b will be a list of length 4 each having 200 elements as shown for out_bbox-> [[lt_x1, lt_x2, ...., lt_x200],
                                                                                [lt_y1, lt_y2, ...., lt_y200],
                                                                                [rb_x1, rb_x2, ...., rb_x200],
