@@ -125,7 +125,7 @@ class SetCriterion(nn.Module):
         # idx is (batch_idx, src_idx). Check _get_src_permutation_idx for more details.
         idx = self._get_src_permutation_idx(indices, print_flag)
         print(f'setcriterion -> idx : {idx}')
-        print(f"setcriterion -> targets['labels'] : {type(targets['labels'])}")        
+        print(f"setcriterion -> type(targets) : {type(targets)}")        
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
         print(f'setcriterion -> target_classes_o : {target_classes_o}')      
         print(f'setcriterion -> src_logits.shape : {src_logits.shape}, src_logits.shape[:2] : {src_logits.shape[:2]}, self.num_classes : {self.num_classes}')       
