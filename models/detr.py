@@ -282,17 +282,16 @@ class SetCriterion(nn.Module):
         num_boxes = torch.as_tensor([num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device)
         if is_dist_avail_and_initialized():
             torch.distributed.all_reduce(num_boxes)
-        num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()
-        if print_flag:
-          print(f"Setcriterion -> num_boxes : {num_boxes}")        
+        num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()      
 
         # Compute all the requested losses
         losses = {}
         for loss in self.losses:
-            if print_flag:
-               print(f"Setcriterion -> loss : {loss}")
             losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes, print_flag))
-
+            
+        if print_flag:        
+            print(f"Setcriterion -> losses before aux : {losses}")
+            
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if 'aux_outputs' in outputs:
             if print_flag:
@@ -310,6 +309,9 @@ class SetCriterion(nn.Module):
                     l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, print_flag, **kwargs)
                     l_dict = {k + f'_{i}': v for k, v in l_dict.items()}
                     losses.update(l_dict)
+        
+        if print_flag:        
+            print(f"Setcriterion -> losses after aux : {losses}")                    
 
         return losses
 
