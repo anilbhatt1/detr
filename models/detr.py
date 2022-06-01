@@ -117,8 +117,6 @@ class SetCriterion(nn.Module):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
-        if print_flag:
-          print(f'Setcriterion -> loss_labels')
         assert 'pred_logits' in outputs
         src_logits = outputs['pred_logits']
 
@@ -157,8 +155,6 @@ class SetCriterion(nn.Module):
         """ Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
         This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
         """
-        if print_flag:
-          print(f'Setcriterion -> loss_cardinality')
           
         pred_logits = outputs['pred_logits']
         device = pred_logits.device
@@ -174,8 +170,6 @@ class SetCriterion(nn.Module):
            targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
            The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
         """
-        if print_flag:
-          print(f'Setcriterion -> loss_boxes') 
           
         assert 'pred_boxes' in outputs
         idx = self._get_src_permutation_idx(indices, print_flag)
@@ -274,8 +268,6 @@ class SetCriterion(nn.Module):
 
         # Retrieve the matching between the outputs of the last layer and the targets
         indices = self.matcher(outputs_without_aux, targets, print_flag)
-        if print_flag:
-          print(f"Setcriterion -> indices : {indices}")
 
         # Compute the average number of target boxes accross all nodes, for normalization purposes
         num_boxes = sum(len(t["labels"]) for t in targets)
