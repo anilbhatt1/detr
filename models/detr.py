@@ -74,7 +74,9 @@ class DETR(nn.Module):
 
         outputs_class = self.class_embed(hs)
         outputs_coord = self.bbox_embed(hs).sigmoid()
+        # if hs size is [6, 2, 100, 256], last one only is considered for out i.e. [-1, 2, 100, 256]
         out = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}
+        # if aux_loss flag is set, then except last, rest of the items will be used for aux_loss i.e [0 -> 4, 2, 100, 256]
         if self.aux_loss:
             out['aux_outputs'] = self._set_aux_loss(outputs_class, outputs_coord)
         return out
