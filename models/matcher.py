@@ -112,9 +112,6 @@ class HungarianMatcher(nn.Module):
         # linear_sum_assignment will give list of indices with optimal assignment [ (13 row_indices, 13 col_indices), (1 row_indices, 1 col_indices)]
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
         
-        if print_flag:
-            print(f"HungarianMatcher FWD -> giving matching indices btw outputs of model's last layer and targets to SetCriterion")
-        
         return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
 
 def build_matcher(args):
