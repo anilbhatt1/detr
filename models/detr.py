@@ -281,10 +281,8 @@ class SetCriterion(nn.Module):
         # Compute all the requested losses
         losses = {}
         for loss in self.losses:
-            losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes, print_flag))
-            
-        if print_flag:        
-            print(f"Setcriterion -> losses before aux : {losses}")
+            losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes, print_flag))           
+
             
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if 'aux_outputs' in outputs:
@@ -302,10 +300,8 @@ class SetCriterion(nn.Module):
                         kwargs = {'log': False}
                     l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, print_flag, **kwargs)
                     l_dict = {k + f'_{i}': v for k, v in l_dict.items()}
-                    losses.update(l_dict)
-        
-        if print_flag:        
-            print(f"Setcriterion -> losses after aux : {losses}")                    
+                    losses.update(l_dict)       
+                 
 
         return losses
 
